@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27520.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StsServer", "StsServer\StsServer.csproj", "{DBDA1674-80CA-473C-8FBC-0E77937C24D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vnr.IdentityServer", "StsServer\Vnr.IdentityServer.csproj", "{DBDA1674-80CA-473C-8FBC-0E77937C24D0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcHybridClient", "MvcHybridClient\MvcHybridClient.csproj", "{5F041E69-991A-451E-881C-8BDDB7324DB5}"
 EndProject

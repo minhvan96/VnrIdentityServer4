@@ -1,13 +1,12 @@
-﻿using StsServer.Data;
-using StsServer.Models;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using StsServer.Data;
+using StsServer.Models;
 using Vnr.IdentityServer.Config;
 
 namespace StsServer
