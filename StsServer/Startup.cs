@@ -5,11 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using StsServer;
 using StsServer.Data;
 using StsServer.Models;
 using Vnr.IdentityServer.Config;
 
-namespace StsServer
+namespace Vnr.IdentityServer
 {
     public class Startup
     {
