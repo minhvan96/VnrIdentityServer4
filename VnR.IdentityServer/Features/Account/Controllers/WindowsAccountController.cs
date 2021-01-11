@@ -14,6 +14,9 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Vnr.IdentityServer.Features.Account.Services.Interfaces;
+using IdentityServerHost.Quickstart.UI;
+using System.Security.Principal;
+using System.Linq;
 
 namespace Vnr.IdentityServer.Quickstart.Account.Controllers
 {
@@ -41,6 +44,51 @@ namespace Vnr.IdentityServer.Quickstart.Account.Controllers
             _events = events;
             _accountService = accountService;
             _signInManager = signInManager;
+        }
+
+        public async Task<IActionResult> LoginAsync(string returnUrl)
+        {
+            // see if windows auth has already been requested and succeeded
+            var result = await HttpContext.AuthenticateAsync(AccountOptions.WindowsAuthenticationSchemeName);
+            if (result?.Principal is WindowsPrincipal wp)
+            {
+                // we will issue the external cookie and then redirect the
+                // user back to the external callback, in essence, tresting windows
+                // auth the same as any other external authentication mechanism
+                var props = new AuthenticationProperties()
+                {
+                    RedirectUri = Url.Action("WindowsLoginCallback"),
+                    Items =
+                    {
+                        { "returnUrl", returnUrl },
+                        { "scheme", AccountOptions.WindowsAuthenticationSchemeName },
+                    }
+                };
+
+                var id = new ClaimsIdentity(AccountOptions.WindowsAuthenticationSchemeName);
+                id.AddClaim(new Claim(JwtClaimTypes.Subject, wp.Identity.Name));
+                id.AddClaim(new Claim(JwtClaimTypes.Name, wp.Identity.Name));
+
+                // add the groups as claims -- be careful if the number of groups is too large
+                if (AccountOptions.IncludeWindowsGroups)
+                {
+                    var wi = wp.Identity as WindowsIdentity;
+                    var groups = wi.Groups.Translate(typeof(NTAccount));
+                    var roles = groups.Select(x => new Claim(JwtClaimTypes.Role, x.Value));
+                    id.AddClaims(roles);
+                }
+
+                await HttpContext.SignInAsync(IdentityConstants.ExternalScheme, new ClaimsPrincipal(id), props);
+
+                return Redirect(props.RedirectUri);
+            }
+            else
+            {
+                // trigger windows auth
+                // since windows auth don't support the redirect uri,
+                // this URL is re-triggered when we call challenge
+                return Challenge(AccountOptions.WindowsAuthenticationSchemeName);
+            }
         }
 
         [HttpGet]

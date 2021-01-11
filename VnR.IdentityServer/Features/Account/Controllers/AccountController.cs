@@ -145,24 +145,13 @@ namespace Vnr.IdentityServer.Features.Account.Controllers
         {
             if (AccountOptions.WindowsAuthenticationSchemeName == provider)
             {
+                //return RedirectToAction("LoginAsync", "WindowsAccount", new { returnUrl });
                 // windows authentication needs special handling
                 return await ProcessWindowsLoginAsync(returnUrl);
             }
             else
             {
-                // start challenge and roundtrip the return URL and
-                var props = new AuthenticationProperties()
-                {
-                    RedirectUri = Url.Action("ExternalLoginCallback"),
-                    Items =
-                    {
-                        { "returnUrl", returnUrl },
-                        { "scheme", provider },
-                    }
-                };
                 return RedirectToAction("Challenge", "External", new { scheme = provider, returnUrl });
-
-                //return Challenge(props, provider);
             }
         }
 
