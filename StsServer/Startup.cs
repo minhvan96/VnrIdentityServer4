@@ -10,6 +10,8 @@ using StsServer;
 using StsServer.Data;
 using StsServer.Models;
 using Vnr.IdentityServer.Config;
+using Vnr.IdentityServer.Features.Account.Services;
+using Vnr.IdentityServer.Features.Account.Services.Interfaces;
 
 namespace Vnr.IdentityServer
 {
@@ -60,6 +62,7 @@ namespace Vnr.IdentityServer
 
             builder.AddDeveloperSigningCredential();
 
+            services.AddScoped<IAccountService, AccountService>();
             services.AddControllersWithViews();
         }
 
