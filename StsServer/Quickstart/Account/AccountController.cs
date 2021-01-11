@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-
 using IdentityModel;
 using IdentityServer4;
 using IdentityServer4.Events;
@@ -88,7 +87,7 @@ namespace IdentityServerHost.Quickstart.UI
                 var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
                 if (context != null)
                 {
-                    // if the user cancels, send a result back into IdentityServer as if they 
+                    // if the user cancels, send a result back into IdentityServer as if they
                     // denied the consent (even if this client does not require consent).
                     // this will send back an access denied OIDC error response to the client.
                     await _interaction.DenyAuthorizationAsync(context, AuthorizationError.AccessDenied);
@@ -151,7 +150,7 @@ namespace IdentityServerHost.Quickstart.UI
             }
             else
             {
-                // start challenge and roundtrip the return URL and 
+                // start challenge and roundtrip the return URL and
                 var props = new AuthenticationProperties()
                 {
                     RedirectUri = Url.Action("ExternalLoginCallback"),
@@ -165,6 +164,69 @@ namespace IdentityServerHost.Quickstart.UI
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> WindowsLoginCallback()
+        {
+            // read external identity from the temporary cookie
+            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+            if (result?.Succeeded != true)
+            {
+                throw new Exception("External authentication error");
+            }
+
+            // lookup our user and external provider info
+            var (user, provider, providerUserId, claims) = await FindUserFromExternalProviderAsync(result);
+            if (user == null)
+            {
+                // this might be where you might initiate a custom workflow for user registration
+                // in this sample we don't show how that would be done, as our sample implementation
+                // simply auto-provisions new external user
+                user = await AutoProvisionUserAsync(provider, providerUserId, claims);
+            }
+
+            // this allows us to collect any additonal claims or properties
+            // for the specific prtotocols used and store them in the local auth cookie.
+            // this is typically used to store data needed for signout from those protocols.
+            var additionalLocalClaims = new List<Claim>();
+            additionalLocalClaims.AddRange(claims);
+
+            var localSignInProps = new AuthenticationProperties();
+            ProcessLoginCallbackForOidc(result, additionalLocalClaims, localSignInProps);
+            ProcessLoginCallbackForWsFed(result, additionalLocalClaims, localSignInProps);
+            ProcessLoginCallbackForSaml2p(result, additionalLocalClaims, localSignInProps);
+
+            // issue authentication cookie for user
+            // we must issue the cookie maually, and can't use the SignInManager because
+            // it doesn't expose an API to issue additional claims from the login workflow
+            var principal = await _signInManager.CreateUserPrincipalAsync(user);
+            additionalLocalClaims.AddRange(principal.Claims);
+
+            var name = principal.FindFirst(JwtClaimTypes.Name)?.Value ?? user.Id;
+            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.Id, name));
+
+            // issue authentication cookie for user
+            var isuser = new IdentityServerUser(principal.GetSubjectId())
+            {
+                DisplayName = name,
+                IdentityProvider = provider,
+                AdditionalClaims = additionalLocalClaims
+            };
+
+            await HttpContext.SignInAsync(isuser, localSignInProps);
+
+            // delete temporary cookie used during external authentication
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+            // validate return URL and redirect back to authorization endpoint or a local page
+            var returnUrl = result.Properties.Items["returnUrl"];
+            if (_interaction.IsValidReturnUrl(returnUrl) || Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
+            return Redirect("~/");
+        }
+
         /// <summary>
         /// Post processing of external authentication
         /// </summary>
@@ -172,7 +234,7 @@ namespace IdentityServerHost.Quickstart.UI
         public async Task<IActionResult> ExternalLoginCallback()
         {
             // read external identity from the temporary cookie
-            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+            var result = await HttpContext.AuthenticateAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
             if (result?.Succeeded != true)
             {
                 throw new Exception("External authentication error");
@@ -261,7 +323,7 @@ namespace IdentityServerHost.Quickstart.UI
             var vm = await BuildLoggedOutViewModelAsync(model.LogoutId);
 
             if (User?.Identity.IsAuthenticated == true)
-            {              
+            {
                 // delete local authentication cookie
                 await _signInManager.SignOutAsync();
 
@@ -287,6 +349,7 @@ namespace IdentityServerHost.Quickstart.UI
         /*****************************************/
         /* helper APIs for the AccountController */
         /*****************************************/
+
         private async Task<LoginViewModel> BuildLoginViewModelAsync(string returnUrl)
         {
             var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
@@ -306,7 +369,7 @@ namespace IdentityServerHost.Quickstart.UI
 
             var providers = schemes
                 .Where(x => x.DisplayName != null ||
-                            (x.Name.Equals(AccountOptions.WindowsAuthenticationSchemeName, 
+                            (x.Name.Equals(AccountOptions.WindowsAuthenticationSchemeName,
                             StringComparison.OrdinalIgnoreCase))
                 )
                 .Select(x => new ExternalProvider
@@ -342,7 +405,7 @@ namespace IdentityServerHost.Quickstart.UI
 
         private string GetDisplayName(AuthenticationScheme authenticationScheme)
         {
-            if(authenticationScheme.Name.Equals(AccountOptions.WindowsAuthenticationSchemeName,
+            if (authenticationScheme.Name.Equals(AccountOptions.WindowsAuthenticationSchemeName,
                             StringComparison.OrdinalIgnoreCase))
             {
                 return AccountOptions.WindowsAuthenticationSchemeName;
@@ -432,7 +495,7 @@ namespace IdentityServerHost.Quickstart.UI
                 // auth the same as any other external authentication mechanism
                 var props = new AuthenticationProperties()
                 {
-                    RedirectUri = Url.Action("ExternalLoginCallback"),
+                    RedirectUri = Url.Action("WindowsLoginCallback"),
                     Items =
                     {
                         { "returnUrl", returnUrl },
@@ -466,7 +529,7 @@ namespace IdentityServerHost.Quickstart.UI
             }
         }
 
-        private async Task<(ApplicationUser user, string provider, string providerUserId, IEnumerable<Claim> claims)> 
+        private async Task<(ApplicationUser user, string provider, string providerUserId, IEnumerable<Claim> claims)>
             FindUserFromExternalProviderAsync(AuthenticateResult result)
         {
             var externalUser = result.Principal;

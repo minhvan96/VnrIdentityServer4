@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using IdentityServer4;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +49,14 @@ namespace Vnr.IdentityServer
                 .AddInMemoryClients(ClientConfig.Clients)
                 .AddAspNetIdentity<ApplicationUser>()
                 .AddProfileService<IdentityWithAdditionalClaimsProfileService>();
+
+            services.AddAuthentication()
+              .AddGoogle("Google", options =>
+              {
+                  options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                  options.ClientId = "782231625152-lpjmieqqss3lbsg4gqfh16ks3j5r7osp.apps.googleusercontent.com";
+                  options.ClientSecret = "fBxHTyHUk3yjbPmhaQkbRKaO";
+              });
 
             builder.AddDeveloperSigningCredential();
 
