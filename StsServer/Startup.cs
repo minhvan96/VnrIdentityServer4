@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
-
+using Vnr.IdentityServer.Config;
 
 namespace StsServer
 {
@@ -43,13 +43,11 @@ namespace StsServer
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
             })
-                .AddInMemoryIdentityResources(Config.GetIdentityResources())
-                .AddInMemoryApiResources(Config.GetApiResources())
-                .AddInMemoryApiScopes(Config.GetApiScopes())
-                .AddInMemoryClients(Config.GetClients())
+                .AddInMemoryIdentityResources(IdentityResourceConfig.IdentityResources)
+                .AddInMemoryApiScopes(ApiScopeConfig.ApiScopes)
+                .AddInMemoryClients(ClientConfig.Clients)
                 .AddAspNetIdentity<ApplicationUser>()
                 .AddProfileService<IdentityWithAdditionalClaimsProfileService>();
-
 
             builder.AddDeveloperSigningCredential();
 
@@ -80,7 +78,6 @@ namespace StsServer
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
-
         }
     }
 }
