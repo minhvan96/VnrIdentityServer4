@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using StsServer;
 using StsServer.Data;
 using StsServer.Models;
@@ -58,7 +60,24 @@ namespace Vnr.IdentityServer
                   options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
                   options.ClientId = "782231625152-lpjmieqqss3lbsg4gqfh16ks3j5r7osp.apps.googleusercontent.com";
                   options.ClientSecret = "fBxHTyHUk3yjbPmhaQkbRKaO";
-              });
+              })
+              .AddOpenIdConnect("aad", "Azure AD", options =>
+              {
+                  options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                  options.SignOutScheme = IdentityServerConstants.SignoutScheme;
+
+                  options.Authority = "https://login.windows.net/4bfa8b1e-02a9-4a13-b7fa-274e458c4897";
+                  options.ClientId = "9390f01c-6cb2-41ba-a638-b951d367a82d";
+                  options.ResponseType = OpenIdConnectResponseType.IdToken;
+                  options.CallbackPath = "/signin-aad";
+                  options.SignedOutCallbackPath = "/signout-callback-aad";
+                  options.RemoteSignOutPath = "/signout-aad";
+                  options.TokenValidationParameters = new TokenValidationParameters
+                  {
+                      NameClaimType = "name",
+                      RoleClaimType = "role"
+                  };
+              }); ;
 
             builder.AddDeveloperSigningCredential();
 
