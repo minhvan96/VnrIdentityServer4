@@ -21,7 +21,6 @@ namespace Vnr.IdentityServer.Features.Account.Controllers
     public class ExternalController : Controller
     {
         private readonly IIdentityServerInteractionService _interaction;
-        private readonly IClientStore _clientStore;
         private readonly ILogger<ExternalController> _logger;
         private readonly IEventService _events;
         private readonly IAccountService _accountService;
@@ -40,7 +39,6 @@ namespace Vnr.IdentityServer.Features.Account.Controllers
             // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
 
             _interaction = interaction;
-            _clientStore = clientStore;
             _logger = logger;
             _events = events;
             _accountService = accountService;
