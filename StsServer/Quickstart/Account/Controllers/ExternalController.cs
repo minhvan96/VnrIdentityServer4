@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Authentication;
 using StsServer.Models;
 using Vnr.IdentityServer.Features.Account.Services.Interfaces;
 
-namespace Vnr.IdentityServer.Quickstart.Account.Controllers
+namespace Vnr.IdentityServer.Features.Account.Controllers
 {
     public class ExternalController : Controller
     {
