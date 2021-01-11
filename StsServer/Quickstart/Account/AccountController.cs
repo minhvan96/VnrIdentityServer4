@@ -160,7 +160,9 @@ namespace IdentityServerHost.Quickstart.UI
                         { "scheme", provider },
                     }
                 };
-                return Challenge(props, provider);
+                return RedirectToAction("Challenge", "External", new { scheme = provider, returnUrl });
+
+                //return Challenge(props, provider);
             }
         }
 
