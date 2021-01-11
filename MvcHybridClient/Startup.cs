@@ -23,7 +23,7 @@ namespace MvcHybridClient
 
         public IConfiguration Configuration { get; }
 
-        private string stsServer = "https://localhost:44364";
+        private string identityServerUrl = "https://localhost:44364";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -46,12 +46,11 @@ namespace MvcHybridClient
             {
                 options.SignInScheme = "Cookies";
                 options.SignOutScheme = "OpenIdConnect";
-                options.Authority = stsServer;
+                options.Authority = identityServerUrl;
                 options.RequireHttpsMetadata = true;
                 options.ClientId = "hybridclient";
                 options.ClientSecret = "hybrid_flow_secret";
                 options.ResponseType = "code id_token";
-                options.Scope.Add("scope_used_for_hybrid_flow");
                 options.Scope.Add("profile");
                 options.Scope.Add("offline_access");
                 options.GetClaimsFromUserInfoEndpoint = true;
@@ -108,9 +107,8 @@ namespace MvcHybridClient
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapDefaultControllerRoute()
+                    .RequireAuthorization();
             });
         }
     }

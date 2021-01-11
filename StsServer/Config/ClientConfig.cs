@@ -22,7 +22,7 @@ namespace Vnr.IdentityServer.Config
 
                     AllowOfflineAccess = true,
                     //AlwaysIncludeUserClaimsInIdToken = true,
-                    AllowedScopes = { "openid", "profile", "offline_access",  "scope_used_for_hybrid_flow" }
+                    AllowedScopes = { "openid", "profile", "offline_access" }
                  }
             };
     }
